@@ -1,0 +1,81 @@
+{
+    "backgroundColor": {
+        "b": 40,
+        "g": 40,
+        "r": 40
+    },
+    "iconPaths": [
+        "/usr/share/icons/hicolor/48x48/apps/",
+        "/usr/share/icons/hicolor/64x64/apps/",
+        "/usr/share/icons/hicolor/128x128/apps/",
+        "/usr/share/pixmaps/"
+    ],
+    "iconSize": 64,
+    "items": [
+        {
+            "icon": "/usr/share/icons/hicolor/48x48/apps/firefox.png",
+            "label": "Firefox",
+            "program": "/home/charles/"
+        },
+        {
+            "icon": "/usr/share/pixmaps/ubuntu-logo.svg",
+            "label": "Mail",
+            "program": "thunderbird"
+        },
+        {
+            "category": [
+                {
+                    "icon": "/usr/share/icons/hicolor/48x48/apps/nautilus.png",
+                    "label": "Fichiers",
+                    "program": "nautilus"
+                },
+                {
+                    "icon": "/usr/share/icons/hicolor/48x48/apps/terminal.png",
+                    "label": "Terminal",
+                    "program": "gnome-terminal"
+                },
+                {
+                    "category": [
+                        {
+                            "icon": "/usr/share/icons/hicolor/48x48/apps/code.png",
+                            "label": "VS Code",
+                            "program": "code"
+                        },
+                        {
+                            "icon": "/snap/gtk-common-themes/1535/share/icons/Yaru/48x48/apps/gedit.png",
+                            "label": "Editeur",
+                            "program": "gedit"
+                        },
+                        {
+                            "icon": "/usr/share/icons/hicolor/48x48/apps/gitg.png",
+                            "label": "Git GUI",
+                            "program": "gitg"
+                        }
+                    ],
+                    "icon": "/snap/gtk-common-themes/1535/share/icons/Adwaita/16x16/places/folder-documents.png",
+                    "label": "Développement"
+                },
+                {
+                    "icon": "/usr/share/icons/hicolor/48x48/mimetypes/text-x-generic.png",
+                    "label": "2025-03-05_23-55.png",
+                    "program": "/home/charles/Images/2025-03-05_23-55.png"
+                }
+            ],
+            "icon": "/usr/share/icons/hicolor/128x128/apps/com.obsproject.Studio.png",
+            "label": "Outils",
+            "program": ""
+        },
+        {
+            "icon": "/usr/share/icons/hicolor/48x48/apps/vlc.png",
+            "label": "VLC",
+            "program": "vlc"
+        },
+        {
+            "icon": "/usr/share/icons/hicolor/128x128/apps/chromium-browser.png",
+            "label": "2025-03-05_23-55.png",
+            "program": "/home/charles/Images/2025-03-05_23-55.png"
+        }
+    ],
+    "opacity": 200,
+    "position": "bottom"
+}
