@@ -31,6 +31,30 @@ make
 
 Modifiez le fichier `config.json` pour personnaliser vos applications.
 
+A python CLI script has been created to manage your configuration file. The script will enable all requested operations with automatic icon search.
+
+```
+usage: managetoolbarconfig.py [-h] [--config CONFIG] {init,list,add,add-category,remove,validate} ...
+
+Gestionnaire de configuration pour launchbar
+
+positional arguments:
+  {init,list,add,add-category,remove,validate}
+                        Commandes disponibles
+    init                Initialiser une configuration par défaut
+    list                Lister tous les items
+    add                 Ajouter un item
+    add-category        Ajouter une catégorie
+    remove              Supprimer un item
+    validate            Valider la configuration et les icônes
+
+options:
+  -h, --help            show this help message and exit
+  --config CONFIG       Chemin du fichier de configuration (défaut: /home/charles/.launchbar.json)
+
+```
+
+
 ### Structure JSON
 
 ```json
