@@ -31,7 +31,10 @@ make
 
 Modifiez le fichier `config.json` pour personnaliser vos applications.
 
-A python CLI script has been created to manage your configuration file. The script will enable all requested operations with automatic icon search.
+Un script python en CLI a été fait pour gérer le fichier de configuration. Ce script sera capable de rechercher automatiquement les icones.
+
+Il peut aussi enregistrer l'environnement de tel maniere que lorsque vous lancerez l'application , cela sera avec l'environnement 
+lorsque vous l'auriez enregistré avec le script python.
 
 ```
 usage: managetoolbarconfig.py [-h] [--config CONFIG] {init,list,add,add-category,remove,validate} ...
