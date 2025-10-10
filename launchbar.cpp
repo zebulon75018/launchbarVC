@@ -220,7 +220,7 @@ void LaunchButton::dropEvent(QDropEvent *event)
 // LaunchBar Implementation
 LaunchBar::LaunchBar(QWidget *parent)
     : QWidget(parent), m_position(Bottom), m_dragging(false), 
-      m_configPath("config.json"), m_opacity(200), m_backgroundColor(40, 40, 40),
+      m_configPath(CONFIG_FILE_JSON), m_opacity(200), m_backgroundColor(40, 40, 40),
       m_iconSize(64)
 {
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
@@ -240,18 +240,25 @@ LaunchBar::LaunchBar(QWidget *parent)
     m_subButtonsWidget->setAttribute(Qt::WA_TranslucentBackground);
     m_subButtonsWidget->hide();
     
-    loadConfig();
+    if (!loadConfig())
+    {
+      qInfo() << " Failed to open configuration file " ;
+      exit (1);
+    }
     updatePosition();
 }
 
-void LaunchBar::loadConfig(const QString &configPath)
+bool LaunchBar::loadConfig(const QString &configPath)
 {
-    m_configPath = configPath;
-    QFile file(configPath);
+    QString fullpath = QDir::homePath() +"/"+ configPath;
+    qDebug() << fullpath;
+    //m_configPath = configPath;
+    m_configPath = fullpath;
+    QFile file(m_configPath);
     if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Impossible d'ouvrir le fichier de configuration:" << configPath;
+        qWarning() << "Impossible d'ouvrir le fichier de configuration:" << m_configPath;
         m_items = QJsonArray();
-        return;
+        return false;
     }
     
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
@@ -259,7 +266,7 @@ void LaunchBar::loadConfig(const QString &configPath)
     
     if (!doc.isObject()) {
         qWarning() << "Format JSON invalide";
-        return;
+        return false;
     }
     
     QJsonObject root = doc.object();
@@ -302,6 +309,7 @@ void LaunchBar::loadConfig(const QString &configPath)
     
     adjustSize();
     updatePosition();
+    return true;
 }
 
 void LaunchBar::saveConfig()
@@ -404,7 +412,15 @@ void LaunchBar::onButtonClicked()
         }
     } else if (!btn->program().isEmpty()) {
         // Lancer le programme sans fermer les menus
-        QProcess::startDetached(btn->program());
+        QFileInfo fi(btn->program());
+        if (fi.isDir()) {
+                   QProcess::startDetached(QString("gnome-terminal -t %1").arg(btn->program()));
+        } else {
+            if (fi.isExecutable())
+                {
+                   QProcess::startDetached(btn->program());
+		}
+        }
     }
 }
 

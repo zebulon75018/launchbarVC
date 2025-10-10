@@ -14,6 +14,8 @@
 
 class LaunchBar;
 
+#define CONFIG_FILE_JSON ".launchbar.json"
+
 class LaunchButton : public QPushButton
 {
     Q_OBJECT
@@ -79,7 +81,7 @@ public:
     enum Position { Bottom, Top, Left, Right };
     
     LaunchBar(QWidget *parent = nullptr);
-    void loadConfig(const QString &configPath = "config.json");
+    bool loadConfig(const QString &configPath = CONFIG_FILE_JSON);
     void setPosition(Position pos);
     void saveConfig();
     
