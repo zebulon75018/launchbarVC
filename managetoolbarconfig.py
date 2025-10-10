@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Gestionnaire de configuration pour toolbar
+Gestionnaire de configuration pour launchbar
 """
 
 import json
@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 
 # Configuration par défaut
-DEFAULT_CONFIG_PATH = Path.home() / ".toolbarconf.json"
+DEFAULT_CONFIG_PATH = Path.home() / ".launchbar.json"
 DEFAULT_ITEM = {
     "icon": "/usr/share/icons/hicolor/48x48/apps/vlc.png",
     "label": "VLC",
@@ -23,8 +23,7 @@ ICON_SEARCH_PATHS = [
     "/usr/share/icons/hicolor/48x48/apps/",
     "/usr/share/icons/hicolor/64x64/apps/",
     "/usr/share/icons/hicolor/128x128/apps/",
-    "/usr/share/pixmaps/",
-    "/snap/gtk-common-themes/1535/share/icons/Yaru/48x48/apps/",
+    "/usr/share/pixmaps/"
 ]
 
 
@@ -275,7 +274,7 @@ class ToolbarConfigManager:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Gestionnaire de configuration pour toolbar",
+        description="Gestionnaire de configuration pour launchbar",
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     
