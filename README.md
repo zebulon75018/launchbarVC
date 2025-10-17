@@ -106,6 +106,51 @@ Fonctionnalités implémentées :
 - ✅ Draggable : vous pouvez déplacer la barre en la glissant
 
 
+Ajoute du 17 octobre 2025
+---
+
+# ✨ Nouvelles Fonctionnalités : Horloge et Calendrier Intégrés
+
+La LaunchBar a été enrichie de nouvelles fonctionnalités d'horloge et de calendrier, offrant des informations utiles directement depuis la barre.
+
+## ✅ Horloge Numérique
+
+*   **Affichage en temps réel** : Affiche l'heure au format `HH:mm:ss`.
+*   **Mise à jour automatique** : Rafraîchissement chaque seconde.
+*   **Positionnement** : Située à l'extrémité droite de la barre (si la barre est horizontale).
+*   **Style** : Texte blanc sur un fond transparent.
+
+## ✅ Bouton Calendrier
+
+*   **Affichage synthétique** :
+    *   Affiche le jour du mois en grand.
+    *   Affiche le mois en abréviation en haut.
+*   **Mise à jour automatique** : Se met à jour à minuit pour refléter le jour courant.
+*   **Design** : Intégration élégante avec un fond semi-transparent.
+
+## ✅ Dropdown Calendrier
+
+*   **Interaction** : Un clic sur le bouton calendrier affiche un calendrier complet du mois.
+*   **Grille de jours** : Présente les jours du mois sous forme de grille, avec les jours de la semaine (L, M, M, J, V, S, D).
+*   **Indicateur de jour courant** : Le jour actuel est souligné et mis en évidence en bleu (`#4080ff`).
+*   **Style des autres jours** : Les autres jours sont affichés en gris, avec un effet de survol.
+*   **Toggle** : Un second clic sur le bouton ferme le calendrier.
+
+## ✅ Configuration dans les Préférences
+
+Ces nouvelles fonctionnalités peuvent être activées ou désactivées via le dialogue des préférences de la LaunchBar :
+
+*   **"Afficher l'horloge"** : Une case à cocher pour activer ou désactiver l'horloge numérique.
+*   **"Afficher le calendrier"** : Une case à cocher pour activer ou désactiver le bouton calendrier et son dropdown.
+*   **Persistance** : L'état de ces options est sauvegardé dans le fichier `config.json` de la barre.
+
+## ✅ Disposition Intelligente
+
+*   **Mode Horizontal** : L'horloge et le calendrier sont visibles et pleinement fonctionnels lorsque la barre est positionnée en `bottom` ou `top`.
+*   **Mode Vertical** : En mode `left` ou `right`, l'horloge et le calendrier sont automatiquement cachés pour optimiser l'espace et l'esthétique de la barre verticale.
+
+---
+
 # Screenshot 
   ![screenshot1](https://github.com/zebulon75018/launchbarVC/blob/main/assets/launchbar1.png?raw=true)
 
