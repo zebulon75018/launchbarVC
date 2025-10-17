@@ -11,10 +11,32 @@
 #include <QTimer>
 #include <QMenu>
 #include <QMap>
+#include <QLabel>
+#include <QTimer>
+#include <QDate>
+
+#define CONFIG_FILE_JSON ".launchbar.json"
 
 class LaunchBar;
 
-#define CONFIG_FILE_JSON ".launchbar.json"
+class CalendarButton : public QPushButton
+{
+    Q_OBJECT
+    
+public:
+    CalendarButton(int iconSize = 64, QWidget *parent = nullptr);
+    void updateDate();
+    
+protected:
+    void paintEvent(QPaintEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    
+private:
+    void showCalendar();
+    int m_iconSize;
+    QDate m_currentDate;
+    QWidget *m_calendarWidget;
+};
 
 class LaunchButton : public QPushButton
 {
@@ -100,6 +122,8 @@ private slots:
     void addCategory();
     void showPreferences();
     void handleDropOnCategory(LaunchButton *category, const QString &filePath);
+    void updateClock();
+    void updateCalendar();
     
 private:
     void createButtons(const QJsonArray &items);
@@ -133,6 +157,14 @@ private:
     QColor m_backgroundColor;
     int m_iconSize;
     QStringList m_iconPaths;
+    
+    // Horloge et calendrier
+    QLabel *m_clockLabel;
+    CalendarButton *m_calendarButton;
+    QTimer *m_clockTimer;
+    bool m_showClock;
+    bool m_showCalendar;
+    QString m_terminalApp;
 };
 
 #endif // LAUNCHBAR_H

@@ -36,8 +36,12 @@
 #include <QTextEdit>
 #include <QComboBox>
 #include <QListWidget>
+#include <QCheckBox>
 #include <QMap>
-#include <QDebug>
+#include <QGridLayout>
+#include <QCalendarWidget>
+#include <QDate>
+#include <QTime>
 #include <cmath>
 
 // Pour Qt5, QMimeDatabase peut nécessiter un include explicite
@@ -45,6 +49,199 @@
     #include <QMimeDatabase>
     #include <QMimeType>
 #endif
+
+// CalendarButton Implementation
+CalendarButton::CalendarButton(int iconSize, QWidget *parent)
+    : QPushButton(parent), m_iconSize(iconSize), m_calendarWidget(nullptr)
+{
+    setFixedSize(m_iconSize, m_iconSize);
+    setFlat(true);
+    setCursor(Qt::PointingHandCursor);
+    m_currentDate = QDate::currentDate();
+}
+
+void CalendarButton::updateDate()
+{
+    QDate newDate = QDate::currentDate();
+    if (newDate != m_currentDate) {
+        m_currentDate = newDate;
+        update();
+    }
+}
+
+void CalendarButton::paintEvent(QPaintEvent *event)
+{
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+    
+    // Dessiner le fond
+    QPainterPath path;
+    path.addRoundedRect(rect(), 8, 8);
+    painter.fillPath(path, QColor(60, 60, 60, 180));
+    
+    // Dessiner le jour du mois
+    QFont dayFont = painter.font();
+    dayFont.setPointSize(m_iconSize / 3);
+    dayFont.setBold(true);
+    painter.setFont(dayFont);
+    painter.setPen(Qt::white);
+    
+    QString dayText = QString::number(m_currentDate.day());
+    QRect dayRect = rect().adjusted(0, m_iconSize / 6, 0, 0);
+    painter.drawText(dayRect, Qt::AlignCenter, dayText);
+    
+    // Dessiner le mois
+    QFont monthFont = painter.font();
+    monthFont.setPointSize(m_iconSize / 8);
+    monthFont.setBold(false);
+    painter.setFont(monthFont);
+    painter.setPen(QColor(200, 200, 200));
+    
+    QString monthText = m_currentDate.toString("MMM").toUpper();
+    QRect monthRect = rect().adjusted(0, 0, 0, -m_iconSize / 6);
+    painter.drawText(monthRect, Qt::AlignCenter | Qt::AlignBottom, monthText);
+}
+
+void CalendarButton::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        showCalendar();
+        event->accept();
+    }
+}
+
+void CalendarButton::showCalendar()
+{
+    // Si le calendrier est déjà ouvert, le fermer
+    if (m_calendarWidget && m_calendarWidget->isVisible()) {
+        m_calendarWidget->hide();
+        m_calendarWidget->deleteLater();
+        m_calendarWidget = nullptr;
+        return;
+    }
+    
+    // Créer le widget calendrier
+    m_calendarWidget = new QWidget();
+    m_calendarWidget->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
+    m_calendarWidget->setAttribute(Qt::WA_TranslucentBackground);
+    
+    QVBoxLayout *layout = new QVBoxLayout(m_calendarWidget);
+    layout->setContentsMargins(10, 10, 10, 10);
+     
+    // En-tête avec le mois/année et bouton fermer
+    QHBoxLayout *headerLayout = new QHBoxLayout();
+    
+    // Créer la grille des jours du mois
+    QGridLayout *gridLayout = new QGridLayout();
+    gridLayout->setSpacing(5);
+    
+    // En-tête avec le mois et l'année
+    QLabel *headerLabel = new QLabel(m_currentDate.toString("MMMM yyyy"));
+    headerLabel->setAlignment(Qt::AlignCenter);
+    QFont headerFont = headerLabel->font();
+    headerFont.setPointSize(12);
+    headerFont.setBold(true);
+    headerLabel->setFont(headerFont);
+    headerLabel->setStyleSheet("color: white; padding: 5px;");
+    headerLayout->addWidget(headerLabel);
+    
+    // Bouton de fermeture
+    QPushButton *closeButton = new QPushButton("✕");
+    closeButton->setFixedSize(24, 24);
+    closeButton->setStyleSheet(
+        "QPushButton { "
+        "background-color: transparent; "
+        "color: #888; "
+        "border: none; "
+        "font-size: 16px; "
+        "font-weight: bold; "
+        "} "
+        "QPushButton:hover { "
+        "color: #ff4444; "
+        "background-color: rgba(255, 68, 68, 50); "
+        "border-radius: 4px; "
+        "}"
+    );
+    connect(closeButton, &QPushButton::clicked, [this]() {
+        if (m_calendarWidget) {
+            m_calendarWidget->hide();
+            m_calendarWidget->deleteLater();
+            m_calendarWidget = nullptr;
+        }
+    });
+    headerLayout->addWidget(closeButton);
+    
+    layout->addLayout(headerLayout);    
+    // Jours de la semaine
+    QStringList dayNames = {"L", "M", "M", "J", "V", "S", "D"};
+    for (int i = 0; i < 7; ++i) {
+        QLabel *dayLabel = new QLabel(dayNames[i]);
+        dayLabel->setAlignment(Qt::AlignCenter);
+        dayLabel->setStyleSheet("color: #888; font-weight: bold;");
+        gridLayout->addWidget(dayLabel, 0, i);
+    }
+    
+    // Calculer le premier jour du mois
+    QDate firstDay(m_currentDate.year(), m_currentDate.month(), 1);
+    int startDayOfWeek = firstDay.dayOfWeek() - 1; // 0 = Lundi
+    int daysInMonth = m_currentDate.daysInMonth();
+    
+    // Remplir la grille avec les jours
+    int row = 1;
+    int col = startDayOfWeek;
+    
+    for (int day = 1; day <= daysInMonth; ++day) {
+        QPushButton *dayButton = new QPushButton(QString::number(day));
+        dayButton->setFixedSize(35, 35);
+        dayButton->setFlat(true);
+        
+        if (day == m_currentDate.day()) {
+            // Jour courant - souligné et en surbrillance
+            dayButton->setStyleSheet(
+                "QPushButton { "
+                "background-color: #4080ff; "
+                "color: white; "
+                "border-radius: 4px; "
+                "font-weight: bold; "
+                "text-decoration: underline; "
+                "}"
+            );
+        } else {
+            dayButton->setStyleSheet(
+                "QPushButton { "
+                "background-color: #404040; "
+                "color: white; "
+                "border-radius: 4px; "
+                "} "
+                "QPushButton:hover { "
+                "background-color: #606060; "
+                "}"
+            );
+        }
+        
+        gridLayout->addWidget(dayButton, row, col);
+        
+        col++;
+        if (col > 6) {
+            col = 0;
+            row++;
+        }
+    }
+    
+    layout->addLayout(gridLayout);
+    
+    // Style du widget
+    m_calendarWidget->setStyleSheet("background-color: rgba(40, 40, 40, 240); border-radius: 10px;");
+    
+    // Positionner le calendrier
+    m_calendarWidget->adjustSize();
+    QPoint buttonPos = mapToGlobal(QPoint(0, 0));
+    
+    // Afficher en dessous du bouton
+    m_calendarWidget->move(buttonPos.x(), buttonPos.y() + height() + 10);
+    
+    m_calendarWidget->show();
+}
 
 // LaunchButton Implementation
 LaunchButton::LaunchButton(const QString &iconPath, const QString &program, 
@@ -58,7 +255,6 @@ LaunchButton::LaunchButton(const QString &iconPath, const QString &program,
     setFlat(true);
     setCursor(Qt::PointingHandCursor);
     setAcceptDrops(hasChildren());
-    setToolTip(label);
     
     m_iconPixmap = QPixmap(iconPath);
     if (m_iconPixmap.isNull()) {
@@ -129,51 +325,25 @@ void LaunchButton::paintEvent(QPaintEvent *event)
         font.setPointSize(8);
         font.setBold(true);
         painter.setFont(font);
-
-        painter.setPen(QColor(0, 0, 0));
-        QRect textRect = rect().adjusted(6, m_iconSize - 12, -2, -2);
-        painter.drawText(textRect, Qt::AlignCenter | Qt::TextWordWrap, m_label);
-        
         painter.setPen(m_isHovered ? Qt::white : QColor(200, 200, 200));
-        textRect = rect().adjusted(2, m_iconSize - 16, -2, -2);
+        
+        QRect textRect = rect().adjusted(2, m_iconSize - 16, -2, -2);
         painter.drawText(textRect, Qt::AlignCenter | Qt::TextWordWrap, m_label);
-
-        // Draw a little triangle
-        QPainterPath path;
-        // Set pen to this point.
-        path.moveTo (10, 0);
-        // Draw line from pen point to this point.
-        path.lineTo (0, 0);
-
-        //path.moveTo (endPointX1, endPointY1); // <- no need to move
-        path.lineTo (0,   10);
-
-        //path.moveTo (endPointX2,   endPointY2); // <- no need to move
-        path.lineTo (10, 0);
-
-        painter.setPen (Qt :: NoPen);
-        painter.fillPath (path, QBrush (QColor ("lightgrey")));
-
     }
     
     if (!m_program.isEmpty() && !m_label.isEmpty() && !hasChildren()) {
         QFileInfo fileInfo(m_program);
         if (!fileInfo.isExecutable()) {
+            QFont font = painter.font();
+            font.setPointSize(7);
+            painter.setFont(font);
+            painter.setPen(m_isHovered ? Qt::white : Qt::lightGray);
+            
+            QRect textRect = rect().adjusted(2, m_iconSize - 14, -2, -2);
             QString fileName = fileInfo.fileName();
             if (fileName.length() > 10) {
                 fileName = fileName.left(8) + "..";
             }
-
-            QFont font = painter.font();
-            font.setPointSize(7);
-            painter.setFont(font);
-
-            painter.setPen( Qt::black);
-            QRect textRect = rect().adjusted(6, m_iconSize - 12, -2, -2);
-            painter.drawText(textRect, Qt::AlignCenter, fileName);
-
-            painter.setPen(m_isHovered ? Qt::white : Qt::lightGray);
-            textRect = rect().adjusted(2, m_iconSize - 16, -2, -2);
             painter.drawText(textRect, Qt::AlignCenter, fileName);
         }
     }
@@ -221,7 +391,7 @@ void LaunchButton::dropEvent(QDropEvent *event)
 LaunchBar::LaunchBar(QWidget *parent)
     : QWidget(parent), m_position(Bottom), m_dragging(false), 
       m_configPath(CONFIG_FILE_JSON), m_opacity(200), m_backgroundColor(40, 40, 40),
-      m_iconSize(64)
+      m_iconSize(64), m_showClock(true), m_showCalendar(true)
 {
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
     setAttribute(Qt::WA_TranslucentBackground);
@@ -229,11 +399,29 @@ LaunchBar::LaunchBar(QWidget *parent)
     setAcceptDrops(true);
     
     // Chemins par défaut pour les icônes
-    m_iconPaths = QStringList() << "/usr/share/icons/hicolor/48x48/apps/"<< "/usr/share/icons/hicolor/64x64/apps/"<< "/usr/share/icons/hicolor/128x128/apps/"<< "/usr/share/pixmaps/" ;
+    m_iconPaths = QStringList() << "/usr/share/icons/hicolor/48x48/apps/"<< "/usr/share/icons/hicolor/64x64/apps/"<< "/usr/share/icons/hicolor/128x128/apps/"<<"/usr/share/pixmaps/";
     
     m_layout = new QHBoxLayout(this);
     m_layout->setContentsMargins(10, 10, 10, 10);
     m_layout->setSpacing(5);
+    
+    // Créer le bouton calendrier
+    m_calendarButton = new CalendarButton(m_iconSize, this);
+    
+    // Créer le label horloge
+    m_clockLabel = new QLabel(this);
+    QFont clockFont = m_clockLabel->font();
+    clockFont.setPointSize(10);
+    clockFont.setBold(true);
+    m_clockLabel->setFont(clockFont);
+    m_clockLabel->setStyleSheet("color: white; background-color: transparent;");
+    m_clockLabel->setAlignment(Qt::AlignCenter);
+    
+    // Timer pour mettre à jour l'horloge toutes les secondes
+    m_clockTimer = new QTimer(this);
+    connect(m_clockTimer, &QTimer::timeout, this, &LaunchBar::updateClock);
+    m_clockTimer->start(1000);
+    updateClock(); // Mettre à jour immédiatement
     
     m_subButtonsWidget = new QWidget();
     m_subButtonsWidget->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
@@ -244,8 +432,7 @@ LaunchBar::LaunchBar(QWidget *parent)
     {
       qInfo() << " Failed to open configuration file " ;
       exit (1);
-    }
-    updatePosition();
+    }    updatePosition();
 }
 
 bool LaunchBar::loadConfig(const QString &configPath)
@@ -260,7 +447,6 @@ bool LaunchBar::loadConfig(const QString &configPath)
         m_items = QJsonArray();
         return false;
     }
-    
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     file.close();
     
@@ -307,9 +493,16 @@ bool LaunchBar::loadConfig(const QString &configPath)
         }
     }
     
+    if (root.contains("showClock")) {
+        m_showClock = root["showClock"].toBool(true);
+    }
+    if (root.contains("showCalendar")) {
+        m_showCalendar = root["showCalendar"].toBool(true);
+    }
+    
     adjustSize();
     updatePosition();
-    return true;
+  return true;
 }
 
 void LaunchBar::saveConfig()
@@ -341,6 +534,9 @@ void LaunchBar::saveConfig()
     }
     root["iconPaths"] = iconPathsArray;
     
+    root["showClock"] = m_showClock;
+    root["showCalendar"] = m_showCalendar;
+    
     QJsonDocument doc(root);
     QFile file(m_configPath);
     if (!file.open(QIODevice::WriteOnly)) {
@@ -355,12 +551,20 @@ void LaunchBar::saveConfig()
 
 void LaunchBar::createButtons(const QJsonArray &items)
 {
+    // Ajouter le bouton calendrier en premier si activé
+    if (m_showCalendar && isHorizontalLayout()) {
+        m_layout->addWidget(m_calendarButton);
+        m_layout->addSpacing(10);
+    }
+    
     int index = 0;
     for (const QJsonValue &value : items) {
         if (!value.isObject()) continue;
         QString icon;
         
+        
         QJsonObject item = value.toObject();
+        
         QString program = item["program"].toString();
         QFileInfo fi = QFileInfo(program);
         if (fi.isDir()) {
@@ -385,6 +589,12 @@ void LaunchBar::createButtons(const QJsonArray &items)
         m_layout->addWidget(btn);
         m_buttons.append(btn);
         index++;
+    }
+    
+    // Ajouter le label horloge à la fin si activé
+    if (m_showClock && isHorizontalLayout()) {
+        m_layout->addSpacing(10);
+        m_layout->addWidget(m_clockLabel);
     }
 }
 
@@ -418,9 +628,9 @@ void LaunchBar::onButtonClicked()
         } else {
             if (fi.isExecutable())
                 {
-                   QProcess::startDetached(btn->program());
-		}
-        }
+        QProcess::startDetached(btn->program());
+                }
+            }
     }
 }
 
@@ -574,10 +784,11 @@ void LaunchBar::setPosition(Position pos)
     m_layout->setContentsMargins(10, 10, 10, 10);
     m_layout->setSpacing(5);
     
-    for (LaunchButton *btn : m_buttons) {
-        m_layout->addWidget(btn);
-    }
+    // Recréer tous les éléments (calendrier, boutons, horloge)
+    clearButtons();
+    createButtons(m_items);
     
+    adjustSize();
     updatePosition();
 }
 
@@ -782,7 +993,12 @@ QString LaunchBar::getIconForMimeType(const QString &filePath)
     
     QString iconName = mimeType.iconName();
     
-    QStringList iconPaths = QStringList() << "/usr/share/icons/hicolor/48x48/mimetypes/"<< "/usr/share/icons/hicolor/64x64/mimetypes/"<< "/usr/share/icons/gnome/48x48/mimetypes/" <<"/usr/share/pixmaps/" ;
+    QStringList iconPaths = {
+        "/usr/share/icons/hicolor/48x48/mimetypes/",
+        "/usr/share/icons/hicolor/64x64/mimetypes/",
+        "/usr/share/icons/gnome/48x48/mimetypes/",
+        "/usr/share/pixmaps/"
+    };
     
     QStringList extensions = {".png", ".svg", ".xpm"};
     
@@ -795,6 +1011,28 @@ QString LaunchBar::getIconForMimeType(const QString &filePath)
         }
     }
 #endif
+    
+    QFileInfo fileInfo(filePath);
+    QString suffix = fileInfo.suffix().toLower();
+    
+    QString iconName2 = "text-x-generic";
+    if (suffix == "pdf") iconName2 = "application-pdf";
+    else if (suffix == "png" || suffix == "jpg" || suffix == "jpeg" || suffix == "gif") iconName2 = "image-x-generic";
+    else if (suffix == "mp3" || suffix == "ogg" || suffix == "wav") iconName2 = "audio-x-generic";
+    else if (suffix == "mp4" || suffix == "avi" || suffix == "mkv") iconName2 = "video-x-generic";
+    else if (suffix == "zip" || suffix == "tar" || suffix == "gz") iconName2 = "package-x-generic";
+    
+    QStringList iconPaths2 = {
+        "/usr/share/icons/hicolor/48x48/mimetypes/",
+        "/usr/share/icons/gnome/48x48/mimetypes/"
+    };
+    
+    for (const QString &path : iconPaths2) {
+        QString fullPath = path + iconName + ".png";
+        if (QFileInfo::exists(fullPath)) {
+            return fullPath;
+        }
+    }
     
     return "/usr/share/icons/hicolor/48x48/mimetypes/text-x-generic.png";
 }
@@ -1050,6 +1288,23 @@ QJsonArray LaunchBar::updateInArray(const QJsonArray &array, const QList<int> &p
     return result;
 }
 
+
+void LaunchBar::updateClock()
+{
+    QTime currentTime = QTime::currentTime();
+    m_clockLabel->setText(currentTime.toString("HH:mm:ss"));
+    
+    // Vérifier si la date a changé (pour le calendrier)
+    updateCalendar();
+}
+
+void LaunchBar::updateCalendar()
+{
+    if (m_calendarButton) {
+        m_calendarButton->updateDate();
+    }
+}
+
 void LaunchBar::contextMenuEvent(QContextMenuEvent *event)
 {
     QMenu menu(this);
@@ -1289,7 +1544,21 @@ void LaunchBar::showPreferences()
     }
     appearanceLayout->addRow("Taille des icônes:", iconSizeCombo);
     
-    tabs->addTab(appearanceTab, "Apparence");
+    QLineEdit* terminalEntry = new QLineEdit();
+    appearanceLayout->addRow("terminal App:", terminalEntry);
+
+
+    // Afficher l'horloge
+    QCheckBox *showClockCheck = new QCheckBox();
+    showClockCheck->setChecked(m_showClock);
+    appearanceLayout->addRow("Afficher l'horloge:", showClockCheck);
+    
+    // Afficher le calendrier
+    QCheckBox *showCalendarCheck = new QCheckBox();
+    showCalendarCheck->setChecked(m_showCalendar);
+    appearanceLayout->addRow("Afficher le calendrier:", showCalendarCheck);
+    
+    tabs->addTab(appearanceTab, "Apparence & Apps");
     
     // Onglet Chemins d'icônes
     QWidget *pathsTab = new QWidget();
@@ -1341,6 +1610,7 @@ void LaunchBar::showPreferences()
         {"position", m_position == Top ? "top" : m_position == Left ? "left" : m_position == Right ? "right" : "bottom"},
         {"items", m_items},
         {"opacity", m_opacity},
+        {"terminal", m_terminalApp},
         {"backgroundColor", QJsonObject{{"r", m_backgroundColor.red()}, {"g", m_backgroundColor.green()}, {"b", m_backgroundColor.blue()}}}
     });
     jsonEdit->setPlainText(doc.toJson(QJsonDocument::Indented));
@@ -1361,6 +1631,8 @@ void LaunchBar::showPreferences()
     
     if (dialog.exec() == QDialog::Accepted) {
         m_opacity = opacitySlider->value();
+        m_terminalApp = terminalEntry->text();
+        
         
         QString jsonText = jsonEdit->toPlainText();
         QJsonDocument newDoc = QJsonDocument::fromJson(jsonText.toUtf8());
