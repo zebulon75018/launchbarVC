@@ -87,7 +87,7 @@ void CalendarButton::paintEvent(QPaintEvent *event)
     painter.setPen(Qt::white);
     
     QString dayText = QString::number(m_currentDate.day());
-    QRect dayRect = rect().adjusted(0, m_iconSize / 6, 0, 0);
+    QRect dayRect = rect().adjusted(0, m_iconSize / 6 -15  , 0, 0);
     painter.drawText(dayRect, Qt::AlignCenter, dayText);
     
     // Dessiner le mois
@@ -329,6 +329,17 @@ void LaunchButton::paintEvent(QPaintEvent *event)
         
         QRect textRect = rect().adjusted(2, m_iconSize - 16, -2, -2);
         painter.drawText(textRect, Qt::AlignCenter | Qt::TextWordWrap, m_label);
+
+        // Draw a little triangle
+        QPainterPath path;
+        path.moveTo (10, 0);
+        path.lineTo (0, 0);
+        path.lineTo (0,   10);
+        path.lineTo (10, 0);
+
+        painter.setPen (Qt :: NoPen);
+        painter.fillPath (path, QBrush (QColor ("lightgrey")));
+
     }
     
     if (!m_program.isEmpty() && !m_label.isEmpty() && !hasChildren()) {
@@ -407,6 +418,7 @@ LaunchBar::LaunchBar(QWidget *parent)
     
     // Créer le bouton calendrier
     m_calendarButton = new CalendarButton(m_iconSize, this);
+    m_calendarButton->setVisible(m_showCalendar);
     
     // Créer le label horloge
     m_clockLabel = new QLabel(this);
@@ -416,6 +428,7 @@ LaunchBar::LaunchBar(QWidget *parent)
     m_clockLabel->setFont(clockFont);
     m_clockLabel->setStyleSheet("color: white; background-color: transparent;");
     m_clockLabel->setAlignment(Qt::AlignCenter);
+    m_clockLabel->setVisible(m_showClock);
     
     // Timer pour mettre à jour l'horloge toutes les secondes
     m_clockTimer = new QTimer(this);
